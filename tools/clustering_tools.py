@@ -1,3 +1,10 @@
+############
+#The functions in this document are used to perform and then show the clustering of the surface salinity distribution. 
+#The first function GMM_timedep takes in the salt field and number of clusters and fits a Gaussian mixture model to the surface salinity distribution. The _timedep ending to the function refers to the fact that the user should pass in a field that is already averaged over the appropriate times (rather than the function receiving a timeseries of salt and using a particular time slice for the fit)
+#The second function computes the AIC (Akaike information criterion) and BIC (Bayesian information criterion) metrics for the salt field that is given. This helps to choose the appropriate number of clusters.
+#The last function categorizes each surface point into clusters using the highest probability that that point's salinity falls into a given Gaussian from previous functions. It then plots the surface as clustered.
+###############
+
 import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
@@ -21,6 +28,19 @@ import sklearn.mixture
 from sklearn.mixture import GaussianMixture
 
 def GMM_timedep(salt_experiment,k,experiment,precise=0):
+    #----------------------------------------------------
+    #This function has input of:
+        # - salt_experiment: salt field with a time mean over the period of time of interest from the dataset of interest
+        # - k: number of clusters
+        # - experiment: A string describing where the salt field came from that is placed on the plot of the distribution
+        # - (OPTIONAL) precise: By default the GMM is found by 40 initial conditions and iterates with a tolerance of 1E-3. Optionally, if you set precise=1, it will instead use 1000 initial conditions and a tolerance of 1E-4. This greatly increases the time for the function to run.
+    # This function has output of:
+        # - means: means of each gaussian from the fit
+        # - sigma: standard deviation of each Gaussian from the fit
+        # - weights: weights of each Gaussian from the fit
+        # - gm: The gaussian mixture model fit to the appropriate data
+        # This function also outputs plots of the PDF of the surface salinity both with and without the GMM fit to it.
+    #-----------------------------------------------------
     np.random.seed(0)
     plt.rcParams['figure.dpi'] = 200
     Lx_div12=20
@@ -129,6 +149,13 @@ def GMM_timedep(salt_experiment,k,experiment,precise=0):
 
 
 def AIC_BIC_timedep(salt_experiment,experiment):
+    #----------------------------------------------------
+    #This function has input of:
+        # - salt_experiment: salt field with a time mean over the period of time of interest from the dataset of interest
+        # - experiment: A string describing where the salt field came from that is placed on the plot
+        # By default, this function uses 40 initial conditions and a tolerance of 1E-3 for fitting the GMMs
+    # This function outputs a plot of the AIC and BIC metrics for different numbers of clusters
+    #-----------------------------------------------------
     Lx_div12=20
     x=np.linspace(31,38,12*Lx_div12+1) # salinities on the x axis that we using for (discretized) CDF
 
@@ -195,7 +222,18 @@ def AIC_BIC_timedep(salt_experiment,experiment):
     plt.title(str)
     plt.legend()
 
-def clusters(gm,salt,title,n,matching_paper=0):
+def clusters(gm,salt,title,k,matching_paper=0):
+    #----------------------------------------------------
+    #This function has input of:
+        # - gm: output from GMM_timedep above. This it the gaussian mixture model fit
+        # - salt_experiment: salt field with a time mean over the period of time of interest from the dataset of interest
+        # - title: title of the map showing clusters (string)
+        # - k: number of clusters
+        # - (OPTIONAL) matching_paper. THere are two colour schemes that can be used here. By default if matching_paper not supplied it is one option. We also have the option to give matching_paper=1 which uses another colour scheme that we are going to use for the paper so all the plots can match
+    # This function has output of:
+        # - y_disjoint: an array with all lat and lon and then the location of each gaussian marked using the gaussian dimension
+        #- a2: the index locations in the vector of salinities x=np.linspace(31,38,10000) where each Gaussian starts and stops
+    #-----------------------------------------------------
     #this gives distinct clusters for salinity
     x=np.linspace(31,38,10000)
     a,a1=np.unique(gm.predict(x.reshape(-1,1)),return_index=True)
@@ -215,7 +253,7 @@ def clusters(gm,salt,title,n,matching_paper=0):
     #make an object that can hold where each gaussian (mean +/- one standard deviation) is spatially located
     y_disjoint = xr.DataArray(
         data=np.empty((180, 360,n)), dims=["latitude","longitude","gaussian"],coords=dict(latitude=s.latitude,longitude=s.longitude,gaussian=np.linspace(1,n,n)))
-    for i in range(0,n):
+    for i in range(0,k):
         y_disjoint[:,:,i]=xr.where((s<(x[a2[i+1]]))&(s>(x[a2[i]])),i+1,0)
 
     if matching_paper==0:
@@ -241,7 +279,7 @@ def clusters(gm,salt,title,n,matching_paper=0):
     p=(o.where(y_disjoint[:,:,1].latitude<65)).plot(vmin=1,vmax=6,ax=ax,cmap=CustomCmap,alpha=1,add_colorbar=False) #you have to set a colormap here because plotting xarray infers from the 
 
     cbar = plt.colorbar(p,orientation='horizontal',extend='neither',pad=0.1,shrink=0.85)
-    tick_locs = (np.arange(n) + 1.7)*(n-1)/n
+    tick_locs = (np.arange(n) + 1.7)*(k-1)/k
     cbar.set_ticks(tick_locs)
     
     # set tick labels (as before)

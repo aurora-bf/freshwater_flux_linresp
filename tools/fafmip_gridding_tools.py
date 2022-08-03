@@ -42,7 +42,7 @@ def regridded_fafmip(salt,area,a2,n):
     #This function has input of:
         # - salt: salt field over the period of time of interest from the dataset of interest
         # - area: The area grid of the salt field of interest
-        # - a2: The vector categorizing salinity ranges for each cluster (output from the GMM functions which are run on the salt field of interest)
+        # - a2: the index locations in the vector of salinities x=np.linspace(31,38,10000) where each Gaussian starts and stops. Note this is output from the function clusters in clustering_tools.py!
         # - n: the number of clusters
     # This function has output of:
         # Timeseries of salt for each ocean only FAFMIP model (HadOM3, MITgcm, ACCESS-OM2, MOM5) for each individual perturbation experiment (stress, heat, water) in each cluster based on the clustering of the salt field of interest
