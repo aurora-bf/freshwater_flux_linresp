@@ -7,6 +7,7 @@
 
 import numpy as np
 import xarray as xr
+import matplotlib
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 import cmip_basins.gfdl as gfdl
@@ -23,12 +24,13 @@ import matplotlib.cm as cm
 from area_grid import *
 import sys
 import scipy
+import matplotlib
 sys.path.insert(1,'/Users/aurora/Documents/GitHub/pattern_amplification')
 #from dip_test import dip
 import sklearn.mixture
 from sklearn.mixture import GaussianMixture
 
-def GMM_timedep(salt_experiment,k,experiment,precise=0,plot=0):
+def GMM_timedep(salt_experiment,k,experiment,precise=0,plot=0,matching_paper=0):
     #----------------------------------------------------
     #This function has input of:
         # - salt_experiment: salt field with a time mean over the period of time of interest from the dataset of interest
@@ -107,6 +109,7 @@ def GMM_timedep(salt_experiment,k,experiment,precise=0,plot=0):
     for i in range(0,k):
         weights[i]=gm.weights_[i]
     
+    
     # finding the PDF of the histogram using count values
     X2 = count_a / sum(count_a)
 
@@ -120,12 +123,15 @@ def GMM_timedep(salt_experiment,k,experiment,precise=0,plot=0):
         plt.title(str3)
     print(X2.sum())
 
+    print(np.shape(pdf_individual*weights))
+
+    inds = sorted(range(len(gm.means_)),key=gm.means_.__getitem__) #find indices sorting the means of the components
+    sort_component = np.squeeze((pdf_individual*weights)[:,inds]) #order the pdf_individual*weights by the order of the means so we can have a consistent colour scheme below
     if plot==0:
         fig, ax = plt.subplots()
         plt.plot(x[1:],X2,alpha=0.3)
 
         # Plot PDF of each component
-        #ax.plot(x, pdf_individual*weights/area, '--', label='Component PDF')
         ax.plot(x, pdf_individual*weights/area, '--', label='Component PDF')
         # Plot PDF of whole model
         ax.plot(x, pdf_individual.dot(weights)/area, '-k', label='Mixture PDF')
@@ -138,6 +144,31 @@ def GMM_timedep(salt_experiment,k,experiment,precise=0,plot=0):
 
         ax.set_xlabel('Salinity (psu)')
         ax.set_ylabel('Area')
+
+        if matching_paper==1:
+            fig, ax = plt.subplots()
+            ax.grid(False)
+            plt.plot(x[1:],X2,alpha=0.35,color='#9F9793')
+            from cycler import cycler
+            #ax.set_prop_cycle(cycler('color',['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#2c7fb8','#253494'])) #comment out if don't want these colours
+            ax.set_prop_cycle(cycler('color',['#2a186c', '#0d4e96', '#2d7c89', '#4aaa81', '#94d35d', '#DBE80C'])) #comment out if don't want these colours
+            # Plot PDF of each component
+            ax.plot(x, sort_component/area, '--', label='Component PDF',linewidth=3)
+            #for i in range(0,6):
+             #   ax.plot(x, sort_component[:,i]/area, '--', label='Component PDF')
+            # Plot PDF of whole model
+            ax.plot(x, pdf_individual.dot(weights)/area, '-k', label='Mixture PDF',linewidth=2)
+            str2='Gaussian Mixture Model with '
+            str2+=str(k)
+            str2+=' components in '
+            str2+=experiment
+            plt.title(str2)
+
+
+            ax.set_xlabel('Salinity (psu)')
+            ax.set_ylabel('Area')
+
+            #matplotlib.pyplot.savefig('cesm_pdf.png', dpi=500,bbox_inches='tight',facecolor='white',transparent=False)
 
     #Turn means and covariances into proper numpy arrays
     means=np.concatenate(gm.means_, axis=0 )
@@ -275,7 +306,8 @@ def clusters(gm,salt,title,k,matching_paper=0,plot=0):
             elif n==7:
                 colorsList = ['#f6eff7','#d0d1e6','#a6bddb','#67a9cf','#1c9099','#016c59','#253494']
         elif matching_paper==1:
-            colorsList=['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#2c7fb8','#253494'] #these colours aren't ideal but we use for paper so that the Gaussian mixture plot, plots of salinity and this plot can have consistent colours for each region.
+            #colorsList=['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#2c7fb8','#253494'] #these colours aren't ideal but we use for paper so that the Gaussian mixture plot, plots of salinity and this plot can have consistent colours for each region.
+            colorsList=['#2a186c', '#0d4e96', '#2d7c89', '#4aaa81', '#94d35d', '#DBE80C']
         o=y_disjoint.sum('gaussian').where(y_disjoint.sum('gaussian')>0)
         CustomCmap = matplotlib.colors.ListedColormap(colorsList)
         #CustomCmap.set_bad(color='w')
@@ -284,11 +316,11 @@ def clusters(gm,salt,title,k,matching_paper=0,plot=0):
         p=(o.where(y_disjoint[:,:,1].latitude<65)).plot(vmin=1,vmax=6,ax=ax,cmap=CustomCmap,alpha=1,add_colorbar=False) #you have to set a colormap here because plotting xarray infers from the 
 
         cbar = plt.colorbar(p,orientation='horizontal',extend='neither',pad=0.1,shrink=0.85)
-        tick_locs = (np.arange(n) + 1.7)*(k-1)/k
+        tick_locs = (np.arange(k) + 1.7)*(k-1)/k
         cbar.set_ticks(tick_locs)
         
         # set tick labels (as before)
-        cbar.set_ticklabels(np.arange(n)+1)
+        cbar.set_ticklabels(np.arange(k)+1)
         
         
         ax.coastlines(color='grey',lw=0.5)
@@ -299,5 +331,7 @@ def clusters(gm,salt,title,k,matching_paper=0,plot=0):
         ax.add_feature(cart.feature.LAND, zorder=100, edgecolor='k')
         ax.set_title(title)
         fig.tight_layout()
+
+        #matplotlib.pyplot.savefig('map_cesm_clusters.png', dpi=500,bbox_inches='tight',facecolor='white',transparent=False)
 
     return y_disjoint,a2
