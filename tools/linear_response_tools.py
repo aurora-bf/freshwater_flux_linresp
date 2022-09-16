@@ -60,13 +60,13 @@ def linear_response2(salt,temp,salt_mean,n):
     area=xr.DataArray(area,dims=["latitude","longitude"],coords=[salt[0,:,:].latitude,salt[0,:,:].longitude])
 
     mean_had_con,sigma_had_con,weights_had_con,gm=GMM_timedep((salt_mean[0:36,:,:].mean('time')).where(salt_mean.latitude<65),n, 'categorize clusters') 
-    y,a2=clusters(gm,salt,'Location of each Gaussian',n)
+    y,a2=clusters(gm,salt_mean[0:36,:,:].mean('time'),'Location of each Gaussian',n,matching_paper=1)
 
     def area_weighted_disjoint(area,i,salt_surface,thing_to_weight,x,a2):
         return ((thing_to_weight*area).where(salt_surface>(x[a2[i]])).where(salt_surface<(x[a2[i+1]]))).sum()/((area).where(salt_surface>(x[a2[i]])).where(salt_surface<(x[a2[i+1]]))).sum()
     
     s=(salt_mean[0:36,:,:].mean('time')).where(salt_mean.latitude<65)
-    x=np.linspace(31,38,1000)
+    x=np.linspace(31,38,10000)
     #we have a 50 year time series, we want to find the mean salt at each region defined by the first year at each of these years
     salt_cesm2=np.empty([50,n])
     temp_cesm2=np.empty([50,n])
@@ -85,7 +85,7 @@ def linear_response2(salt,temp,salt_mean,n):
     salt_mit_stress,salt_mom_stress,salt_had_stress,salt_access_stress,salt_mit_heat,salt_mom_heat,salt_had_heat,salt_access_heat,salt_mit_water,salt_mom_water,salt_had_water,salt_access_water=regridded_fafmip(salt,area,a2,n)
 
 
-    start_yr=14
+    start_yr=15
     end_yr=19
 
     df=np.zeros([50,end_yr-start_yr,3,3])
@@ -96,7 +96,7 @@ def linear_response2(salt,temp,salt_mean,n):
 
         access1mit0had2=p
 
-        start_yr=14
+        start_yr=15
         end_yr=19
         for start in range(start_yr,end_yr):
 
@@ -353,7 +353,7 @@ def linear_response_list3(salt,temp,n): #the previous function uses the linear t
     return change_water_1, change_heat_1
     
     
-def linear_response_list_bootstrap(salt,temp,salt_mean,n,a2,obs=0): #this function is similar to linear_response_list but takes input that's already collocated in clusters (rather than a lat lon grid). takes last 5 years minus first 5 years.
+def linear_response_list_bootstrap(salt,temp,salt_mean,n,a2,obs=0,weighted=0,area_cluster=np.ones(6)): #this function is similar to linear_response_list but takes input that's already collocated in clusters (rather than a lat lon grid). takes last 5 years minus first 5 years.
    #----------------------------------------------------
     #This function takes in salt and temperature fields as a bootstrapped list list. Thus, the preprocessing of clustering and then bootstrapping around has already been done
     #This function has input of:
@@ -391,7 +391,8 @@ def linear_response_list_bootstrap(salt,temp,salt_mean,n,a2,obs=0): #this functi
         nn=int(np.size(salt_mean[:,0,0])/12)
     elif obs==1:
         nn=int(np.size(salt_mean[:,0,0]))
-    
+        
+
     temp_mit_stress,temp_mom_stress,temp_had_stress,temp_access_stress,temp_mit_heat,temp_mom_heat,temp_had_heat,temp_access_heat,temp_mit_water,temp_mom_water,temp_had_water,temp_access_water=regridded_fafmip_temp(salt_mean,area,a2,n)
     salt_mit_stress,salt_mom_stress,salt_had_stress,salt_access_stress,salt_mit_heat,salt_mom_heat,salt_had_heat,salt_access_heat,salt_mit_water,salt_mom_water,salt_had_water,salt_access_water=regridded_fafmip(salt_mean,area,a2,n)
     
@@ -478,7 +479,14 @@ def linear_response_list_bootstrap(salt,temp,salt_mean,n,a2,obs=0): #this functi
                     #A=np.concatenate((np.matrix(change2_water[0,:]).T,np.matrix(change2_heat[0,:]).T),axis=1)
                     #df[i,start-start_yr,:,p]=(np.linalg.inv(np.matmul(A.T,A))*np.matmul(A.T,np.matrix(RHS).T)).reshape(3)
                     #dist[i,start-start_yr,p] = np.linalg.norm(np.matmul(A,df[i,start-start_yr,:,p])-RHS)
-                    x, residuals, rank, s=np.linalg.lstsq(A,np.matrix(RHS).T,rcond = -1)
+                    if weighted==0:
+                        x, residuals, rank, s=np.linalg.lstsq(A,np.matrix(RHS).T,rcond = -1)
+                    elif weighted==1:
+                        W = np.concatenate([area_cluster,area_cluster])
+                        W = np.sqrt(np.diag(W))
+                        Aw = np.dot(W,A)
+                        Bw = np.dot(np.matrix(RHS),W)
+                        x, residuals, rank, s= np.linalg.lstsq(Aw, Bw.T,rcond = -1)
                     df[i,start-start_yr,:,p]=x.reshape(3)
         
         

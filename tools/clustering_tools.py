@@ -80,7 +80,8 @@ def GMM_timedep(salt_experiment,k,experiment,precise=0,plot=0,matching_paper=0):
         X[i]=np.random.choice(bins_count[1:], p=pdf_experiment)
     X2=X.reshape(-1,1)
     if precise==1:
-        gm = GaussianMixture(n_components=k, tol=1E-4, max_iter=10000,n_init=1000,random_state=0).fit(X2) #rather than fit to the pdf, we want to fit to random numbers sampled from the pdf #previously had 500 ninit and 1E-3 tol. didn't have max iter before
+        #gm = GaussianMixture(n_components=k, tol=1E-4, max_iter=10000,n_init=1000,random_state=0).fit(X2) #rather than fit to the pdf, we want to fit to random numbers sampled from the pdf #previously had 500 ninit and 1E-3 tol. didn't have max iter before
+        gm = GaussianMixture(n_components=k, tol=1E-4, max_iter=1000,n_init=100,random_state=0).fit(X2)
     elif precise==0:
         gm = GaussianMixture(n_components=k, tol=1E-3, n_init=40,random_state=0).fit(X2)
     
@@ -226,7 +227,7 @@ def AIC_BIC_timedep(salt_experiment,experiment):
     # Fit models with 1-15 components
     k_arr = np.arange(15) + 1
     models = [
-    GaussianMixture(n_components=k1, tol=0.001,n_init=40).fit(X2) #rather than fit to the pdf, we want to fit to random numbers sampled from the pdf
+    GaussianMixture(n_components=k1, tol=0.001,n_init=40,random_state=0).fit(X2) #rather than fit to the pdf, we want to fit to random numbers sampled from the pdf
     for k1 in k_arr
     ]
 
@@ -242,6 +243,8 @@ def AIC_BIC_timedep(salt_experiment,experiment):
     str+=experiment
     plt.title(str)
     plt.legend()
+    
+    matplotlib.pyplot.savefig('AIC_BIC.png', dpi=500,bbox_inches='tight',facecolor='white',transparent=False)
 
     fig, ax = plt.subplots()
     # Compute metrics to determine best hyperparameter
@@ -255,6 +258,9 @@ def AIC_BIC_timedep(salt_experiment,experiment):
     str+=experiment
     plt.title(str)
     plt.legend()
+    
+    matplotlib.pyplot.savefig('AIC_BIC_grad.png', dpi=500,bbox_inches='tight',facecolor='white',transparent=False)
+
 
 def clusters(gm,salt,title,k,matching_paper=0,plot=0):
     #----------------------------------------------------
@@ -288,7 +294,7 @@ def clusters(gm,salt,title,k,matching_paper=0,plot=0):
     #make an object that can hold where each gaussian (mean +/- one standard deviation) is spatially located
     y_disjoint = xr.DataArray(
         data=np.empty((180, 360,k)), dims=["latitude","longitude","gaussian"],coords=dict(latitude=s.latitude,longitude=s.longitude,gaussian=np.linspace(1,k,k)))
-    for i in range(0,k):
+    for i in range(0,np.size(a2)-1):
         y_disjoint[:,:,i]=xr.where((s<(x[a2[i+1]]))&(s>(x[a2[i]])),i+1,0)
 
     if plot==0:
