@@ -299,17 +299,17 @@ def clusters(gm,salt,title,k,matching_paper=0,plot=0):
 
     if plot==0:
         if matching_paper==0:
-            if n==6:
+            if k==6:
                 colorsList = ['#f6eff7','#d0d1e6','#a6bddb','#67a9cf','#1c9099','#016c59']
-            elif n==4:
+            elif k==4:
                 colorsList = ['#f6eff7','#d0d1e6','#1c9099','#016c59']
-            elif n==9:
+            elif k==9:
                 colorsList = ['#f6eff7','#d0d1e6','#a6bddb','#67a9cf','#1c9099','#016c59','#225ea8','#253494','#081d58']
-            elif n==5:
+            elif k==5:
                 colorsList = ['#d0d1e6','#a6bddb','#67a9cf','#1c9099','#016c59']
-            elif n==8:
+            elif k==8:
                 colorsList = ['#f6eff7','#d0d1e6','#a6bddb','#67a9cf','#1c9099','#016c59','#253494','#081d58']
-            elif n==7:
+            elif k==7:
                 colorsList = ['#f6eff7','#d0d1e6','#a6bddb','#67a9cf','#1c9099','#016c59','#253494']
         elif matching_paper==1:
             #colorsList=['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#2c7fb8','#253494'] #these colours aren't ideal but we use for paper so that the Gaussian mixture plot, plots of salinity and this plot can have consistent colours for each region.
