@@ -41,12 +41,12 @@ def ensemble_member_blockbootstrap(l):
     n=6 #number of clusters
     #cluster the salinity field
     from clustering_tools import GMM_timedep
-    mean_con,sigma_con,weights_con,gm=GMM_timedep((salt_list[real][0*12:5*12,:,:].mean('time')).where(salt_list[real][0,:,:].latitude<65),n,'1975 to 1980 Historical') #take mean over first year
+    mean_con,sigma_con,weights_con,gm=GMM_timedep((salt_list[real][0*12:3*12,:,:].mean('time')).where(salt_list[real][0,:,:].latitude<65),n,'2011 to 2014') #take mean over first year
 
     from clustering_tools import clusters
-    y,a2=clusters(gm,salt_list[real][0*12:5*12,:,:].mean('time'),'Location of each Gaussian, categorized by years 1975-1980 (mean), CESM',n)
+    y,a2=clusters(gm,salt_list[real][0*12:3*12,:,:].mean('time'),'Location of each Gaussian, categorized by years 2011 to 2014 (mean), CESM',n)
 
-    s=(salt_list[real][0*12:5*12,:,:].mean('time')).where(salt_list[real][0*12:5*12,:,:].latitude<65)
+    s=(salt_list[real][0*12:3*12,:,:].mean('time')).where(salt_list[real][0*12:3*12,:,:].latitude<65)
 
     #find the mean salinity and temperature at each time in each of the clusters found above    
     salt_cesm_member=np.empty([50,n])
@@ -57,6 +57,15 @@ def ensemble_member_blockbootstrap(l):
         for i in range(0,n):
             salt_cesm_member[j,i]=area_weighted_disjoint(area,i,s,s_new,x,a2)
             temp_cesm_member[j,i]=area_weighted_disjoint(area,i,s,t_new,x,a2)
+            
+    ## THIS PART IS ONLY NEEDED IF YOU'RE DOING AREA WEIGHTED        
+    def area_disjoint(area,i,salt_surface,thing_to_weight,x,a2):
+        return ((thing_to_weight*area).where(salt_surface>(x[a2[i]])).where(salt_surface<(x[a2[i+1]]))).sum()
+    ones_grid=salt_list[real][0,:,:].where(salt_list[real][0,:,:]==1, other=1)
+    area_cluster=np.empty(6)
+    for i in range(0,n):
+        area_cluster[i]=area_disjoint(area,i,s,ones_grid,x,a2)
+    ##
 
     #find the change in salinity and temperature in each cluster
     change_cesm_member=salt_cesm_member[:,:]-np.mean(salt_cesm_member[0:2,:],0)
@@ -83,7 +92,7 @@ def ensemble_member_blockbootstrap(l):
     from recombinator.block_bootstrap import circular_block_bootstrap
 
     # number of replications for bootstraps (number of resampled time-series to generate)
-    B = 500
+    B = 3000
 
     #perform block bootstrapping
     y_star_cb \
@@ -104,7 +113,8 @@ def ensemble_member_blockbootstrap(l):
     #Apply linear response theory to each member of the artificial ensemble which was created for individual ensemble member l
     n=6
     from linear_response_tools import linear_response_list_bootstrap
-    change_water1, change_heat1=linear_response_list_bootstrap(salt_list_bootstrap,temp_list_bootstrap,salt_list[real][0:45*12,:,:],n,a2)
+    #change_water1, change_heat1=linear_response_list_bootstrap(salt_list_bootstrap,temp_list_bootstrap,salt_list[real][0:45*12,:,:],n,a2) SWITCH TO THIS LINE IF YOU DON'T WANT AREA WEIGHTED
+    change_water1, change_heat1=linear_response_list_bootstrap(salt_list_bootstrap,temp_list_bootstrap,salt_list[real][0:45*12,:,:],n,a2,weighted=1,area_cluster=area_cluster)
     
     std=change_water1.std()
     mean=change_water1.mean()
@@ -136,10 +146,10 @@ for i in range(0,34):
     s=s.assign_coords(latitude=s.lat[:,0],longitude=s.lon[0,:])
     salt_2005on_list.append(s)
     
-salt_list=[] #combine salt lists from the two time periods and then cut to 1975 to 2025
+salt_list=[] 
 for i in range(0,34):
     s=salt_2005on_list[i]
-    salt_list.append(s[5*12:12*55,:,:]) #cut to 1975 to 2025
+    salt_list.append(s[5*12:12*55,:,:]) #cut to 2011 to 2055
     
 #same as above but for temperature
 temp_2005on_list=[]
@@ -151,7 +161,7 @@ for i in range(0,34):
 temp_list=[]
 for i in range(0,34):
     s=temp_2005on_list[i]
-    temp_list.append(s[5*12:12*55,:,:]) #cut to 1975 to 2025
+    temp_list.append(s[5*12:12*55,:,:]) #cut to 2011 to 2055
 
 #define an area matrix
 import sys
@@ -169,7 +179,7 @@ x=np.linspace(31,38,10000)
 #empty arrays we will store in
 mean_member2=np.empty(34) #store the means of applying linear response theory to each ensemble member
 std_member2=np.empty(34) #store the standard deviations of applying linear response theory to each ensemble member
-change_water=np.empty([34,500])
+change_water=np.empty([34,3000])
 
 
 
@@ -179,9 +189,9 @@ for i in range(0,34):
     print(i)
 
 #pickle the results
-with open("bootstrap_std_500_2011to2050", "wb") as fp:   #Pickling
+with open("bootstrap_std_3000_2011to2050_weighted", "wb") as fp:   #Pickling
     pickle.dump(std_member2, fp)
-with open("bootstrap_mean_500_2011to2050", "wb") as fp:   #Pickling
+with open("bootstrap_mean_3000_2011to2050_weighted", "wb") as fp:   #Pickling
     pickle.dump(mean_member2, fp)
-with open("bootstrap_change_water_500_2011to2050","wb") as fp:
+with open("bootstrap_change_water_3000_2011to2050_weighted","wb") as fp:
     pickle.dump(change_water, fp)

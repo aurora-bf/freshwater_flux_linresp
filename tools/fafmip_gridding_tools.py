@@ -249,6 +249,129 @@ def regridded_fafmip(salt,area,a2,n):
     return salt_mit_stress,salt_mom_stress,salt_had_stress,salt_access_stress,salt_mit_heat,salt_mom_heat,salt_had_heat,salt_access_heat,salt_mit_water,salt_mom_water,salt_had_water,salt_access_water
 
 
+def regridded_fafmip_all_control(salt,area,a2,n):
+    #----------------------------------------------------
+    #This function has input of:
+        # - salt: salt field over the period of time of interest from the dataset of interest
+        # - area: The area grid of the salt field of interest
+        # - a2: the index locations in the vector of salinities x=np.linspace(31,38,10000) where each Gaussian starts and stops. Note this is output from the function clusters in clustering_tools.py!
+        # - n: the number of clusters
+    # This function has output of:
+        # Timeseries of salt for each ocean only FAFMIP model (HadOM3, MITgcm, ACCESS-OM2, MOM5) for each individual perturbation experiment (stress, heat, water) in each cluster based on the clustering of the salt field of interest
+    #-----------------------------------------------------
+    ## OCEAN ONLY FAFMIP, SALT:
+    f='/scratch/abf376/FAFMIP/ACCESS-OM2/FAF-all/so_yr_ACCESS-OM2_FAF-all_01-70.nc'
+    salt_all=xr.open_dataset(f)['salt']
+    salt_all=salt_all.where(salt_all !=9.969209968386869e+36) #get rid of weird values
+
+    regridder_accesstocesm2 = xe.Regridder(salt_all[:,0,:,:], salt, "bilinear",periodic=True)
+    regrid_surface_access = regridder_accesstocesm2(salt_all[:,0,:,:])
+
+    f='/scratch/abf376/FAFMIP/MOM5/FAF-all/so_yr_MOM5_FAF-all_01-70.nc'
+    salt_all_mom=xr.open_dataset(f)['salt']
+    salt_all_mom=salt_all_mom.where(salt_all_mom !=9.969209968386869e+36) #get rid of weird values
+
+    regridder_momtocesm2 = xe.Regridder(salt_all_mom[:,0,:,:], salt, "bilinear",periodic=True)
+    regrid_surface_mom = regridder_momtocesm2(salt_all_mom[:,0,:,:])
+
+    f='/scratch/abf376/FAFMIP/HadOM3/FAF-all/so_yr_HadOM3_FAF-all_01-70.nc'
+    salt_all=xr.open_dataset(f)['salt'] #function of time depth latitude and longitude. long_name: salinity (ocean) (psu-35)/1000
+    salt_all=salt_all.where(salt_all !=9.969209968386869e+36)
+    salt_adjusted_all=salt_all*1000+35
+    salt_adjusted_all=salt_adjusted_all.where(salt_adjusted_all>6)
+    lat = xr.open_dataset(f)['latitude']
+    lon = xr.open_dataset(f)['longitude']
+    
+    f='/scratch/abf376/FAFMIP/MITGCM_v2/FAF-all/SALT_yr_faf-all_CanESM2_10000-10100.nc'
+    salt_all_mit=xr.open_dataset(f)['SALT']
+    salt_all_mit=salt_all_mit.where(salt_all_mit !=9.969209968386869e+36) #get rid of weird values
+
+    regridder_mittocesm2 = xe.Regridder(salt_all_mit[:,0,:,:], salt, "bilinear",periodic=True)
+    regrid_surface_mit = regridder_mittocesm2(salt_all_mit[:,0,:,:])
+    
+
+    regridder_hadtocesm2 = xe.Regridder(salt_adjusted_all[:,0,:,:].where(salt_adjusted_all.latitude<65), salt.where(salt.latitude<65), "bilinear",periodic=True)
+    regrid_surface_had = regridder_hadtocesm2(salt_adjusted_all[:,0,:,:].where(salt_adjusted_all.latitude<65))
+
+
+    ## OCEAN ONLY FAFMIP, CONTROL:
+    f='/scratch/abf376/FAFMIP/ACCESS-OM2/FAF-control/so_yr_ACCESS-OM2_FAF-control_01-70.nc'
+    salt_con=xr.open_dataset(f)['salt']
+    salt_con=salt_con.where(salt_con !=9.969209968386869e+36) #get rid of weird values
+
+    regrid_surface_access_con = regridder_accesstocesm2(salt_con[:,0,:,:])
+
+
+    f='/scratch/abf376/FAFMIP/HadOM3/FAF-control/so_yr_HadOM3_FAF-control_01-70.nc'
+    salt_con=xr.open_dataset(f)['sea_water_salinity'] #function of time depth latitude and longitude. long_name: salinity (ocean) (psu-35)/1000
+    salt_con=salt_con.where(salt_con !=9.969209968386869e+36)
+    lat = xr.open_dataset(f)['latitude']
+    lon = xr.open_dataset(f)['longitude']
+
+    regrid_surface_had_con = regridder_hadtocesm2(salt_con[:,0,:,:].where(salt_con.latitude<65))
+
+    f='/scratch/abf376/FAFMIP/MITGCM_v2/FAF-control/SALT_yr_flux-only_CanESM2_10000-10100.nc'
+    salt_con_mit=xr.open_dataset(f)['SALT']
+    salt_con_mit=salt_con_mit.where(salt_con_mit !=9.969209968386869e+36) #get rid of weird values
+
+    regrid_surface_mit_con = regridder_mittocesm2(salt_con_mit[:,0,:,:])
+
+
+    def area_weighted_disjoint(area,i,salt_surface,thing_to_weight,x,a2):
+        return ((thing_to_weight*area).where(salt_surface>(x[a2[i]])).where(salt_surface<(x[a2[i+1]]))).sum()/((area).where(salt_surface>(x[a2[i]])).where(salt_surface<(x[a2[i+1]]))).sum()
+
+    x=np.linspace(31,38,10000)
+    #let's find the change in salinity in each of these regions over the 70 years
+    s=(salt[0:36,:,:].mean('time')).where(salt.latitude<65)
+
+    salt_access_all=np.empty([70,n])
+    for j in range(0,70): 
+        s_new=(regrid_surface_access[j,:,:]).where(regrid_surface_access.latitude<65)
+        for i in range(0,n):
+            salt_access_all[j,i]=area_weighted_disjoint(area,i,s,s_new,x,a2)
+
+
+    salt_had_all=np.empty([70,n])
+    for j in range(0,70):
+        s_new=(regrid_surface_had[j,:,:])
+        for i in range(0,n):
+            salt_had_all[j,i]=area_weighted_disjoint(area,i,s,s_new,x,a2)
+
+
+    salt_mom_all=np.empty([70,n])
+    for j in range(0,70):
+        s_new=(regrid_surface_mom[j,:,:])
+        for i in range(0,n):
+            salt_mom_all[j,i]=area_weighted_disjoint(area,i,s,s_new,x,a2)
+
+    salt_mit_all=np.empty([70,n])
+    for j in range(0,70):
+        s_new=(regrid_surface_mit[j,:,:])
+        for i in range(0,n):
+            salt_mit_all[j,i]=area_weighted_disjoint(area,i,s,s_new,x,a2)
+
+
+    #CONTROL
+    salt_access_con=np.empty([70,n])
+    for j in range(0,70): 
+        s_new=(regrid_surface_access_con[j,:,:]).where(regrid_surface_access_con.latitude<65)
+        for i in range(0,n):
+            salt_access_con[j,i]=area_weighted_disjoint(area,i,s,s_new,x,a2)
+
+
+    salt_had_con=np.empty([70,n])
+    for j in range(0,70):
+        s_new=(regrid_surface_had_con[j,:,:])
+        for i in range(0,n):
+            salt_had_con[j,i]=area_weighted_disjoint(area,i,s,s_new,x,a2)
+
+    salt_mit_con=np.empty([70,n])
+    for j in range(0,70):
+        s_new=(regrid_surface_mit_con[j,:,:])
+        for i in range(0,n):
+            salt_mit_con[j,i]=area_weighted_disjoint(area,i,s,s_new,x,a2)
+
+    return salt_mit_all,salt_mom_all,salt_had_all,salt_access_all, salt_access_con, salt_had_con, salt_mit_con
 
 def regridded_fafmip_temp(salt,area,a2,n):
     #----------------------------------------------------
@@ -338,7 +461,7 @@ def regridded_fafmip_temp(salt,area,a2,n):
     f='/scratch/abf376/FAFMIP/MITGCM_v2/FAF-heat/THETA_yr_faf-heat_CanESM2_10000-10100.nc'
     temp_heat_mit=xr.open_dataset(f)['THETA']
     temp_heat_mit=temp_heat_mit.where(temp_heat_mit !=9.969209968386869e+36) #get rid of weird values
-    temp_heat_mit=temp_heat_mit.where(temp_heat_mit >0) #get rid of weird values
+    temp_heat_mit=temp_heat_mit.where(temp_heat_mit>-30) #get rid of weird values
     regrid_surface_mit_heat_temp = regridder_mittocesm2(temp_heat_mit[:,0,:,:])
 
     f='/scratch/abf376/FAFMIP/MITGCM_v2/FAF-water/THETA_yr_faf-water_CanESM2_10000-10100.nc'
@@ -459,6 +582,118 @@ def regridded_fafmip_temp(salt,area,a2,n):
             temp_had_heat[j,i]=area_weighted_disjoint(area,i,s,s_new,x,a2)
 
     return temp_mit_stress,temp_mom_stress,temp_had_stress,temp_access_stress,temp_mit_heat,temp_mom_heat,temp_had_heat,temp_access_heat,temp_mit_water,temp_mom_water,temp_had_water,temp_access_water
+    
+def regridded_fafmip_temp_all_control(salt,area,a2,n):
+    #----------------------------------------------------
+    #This function has input of:
+        # - salt: salt field over the period of time of interest from the dataset of interest
+        # - area: The area grid of the salt field of interest
+        # - a2: The vector categorizing salinity ranges for each cluster (output from the GMM functions which are run on the salt field of interest)
+        # - n: the number of clusters
+    # This function has output of:
+        # Timeseries of surface temperature in each ocean only FAFMIP model (HadOM3, MITgcm, ACCESS-OM2, MOM5) for each individual perturbation experiment (stress, heat, water) in each cluster based on the clustering of the salt field of interest
+    #NOTE: This function takes the same input as the function above (regridded_fafmip_salt), but returns time series of surface temperature rather than surface salinity
+    #-----------------------------------------------------
+
+    def area_weighted_disjoint(area,i,salt_surface,thing_to_weight,x,a2):
+        return ((thing_to_weight*area).where(salt_surface>(x[a2[i]])).where(salt_surface<(x[a2[i+1]]))).sum()/((area).where(salt_surface>(x[a2[i]])).where(salt_surface<(x[a2[i+1]]))).sum()
+    
+    ## OCEAN ONLY FAFMIP, GET REGRIDDERS:
+    f='/scratch/abf376/FAFMIP/ACCESS-OM2/FAF-all/thetao_yr_ACCESS-OM2_FAF-all_01-70.nc'
+    temp_all=xr.open_dataset(f)['temp']
+    temp_all=temp_all.where(temp_all !=9.969209968386869e+36) #get rid of weird values
+
+    regridder_accesstocesm2 = xe.Regridder(temp_all[:,0,:,:], salt, "bilinear",periodic=True)
+    regrid_surface_access = regridder_accesstocesm2(temp_all[:,0,:,:])
+
+
+    f='/scratch/abf376/FAFMIP/HadOM3/FAF-all/thetao_yr_HadOM3_FAF-all_01-70.nc'
+    temp_all=xr.open_dataset(f)['temp'] #function of time depth latitude and longitude. long_name: salinity (ocean) (psu-35)/1000
+    temp_all=temp_all.where(temp_all !=9.969209968386869e+36)
+    lat = xr.open_dataset(f)['latitude']
+    lon = xr.open_dataset(f)['longitude']
+
+    regridder_hadtocesm2 = xe.Regridder(temp_all[:,0,:,:].where(temp_all.latitude<65), salt.where(salt.latitude<65), "bilinear",periodic=True)
+    regrid_surface_had = regridder_hadtocesm2(temp_all[:,0,:,:].where(temp_all.latitude<65))
+
+    f='/scratch/abf376/FAFMIP/MITGCM_v2/FAF-all/THETA_yr_faf-all_CanESM2_10000-10100.nc'
+    temp_all_mit=xr.open_dataset(f)['THETA']
+    temp_all_mit=temp_all_mit.where(temp_all_mit !=9.969209968386869e+36) #get rid of weird values
+
+    regridder_mittocesm2 = xe.Regridder(temp_all_mit[:,0,:,:], salt, "bilinear",periodic=True)
+    regrid_surface_mit = regridder_mittocesm2(temp_all_mit[:,0,:,:])
+
+
+    ## OCEAN ONLY FAFMIP, CONTROL:
+    f='/scratch/abf376/FAFMIP/ACCESS-OM2/FAF-control/thetao_yr_ACCESS-OM2_FAF-control_01-70.nc'
+    temp_con=xr.open_dataset(f)['temp']
+    temp_con=temp_con.where(temp_con !=9.969209968386869e+36) #get rid of weird values
+
+    regrid_surface_access_con = regridder_accesstocesm2(temp_con[:,0,:,:])
+
+
+    f='/scratch/abf376/FAFMIP/HadOM3/FAF-control/thetao_yr_HadOM3_FAF-control_01-70.nc'
+    temp_con=xr.open_dataset(f)['sea_water_potential_temperature']
+    temp_con=temp_con.where(temp_con !=9.969209968386869e+36)
+    temp_con=temp_con-273.15
+    temp_con=temp_con.where(temp_con>-20)
+    lat = xr.open_dataset(f)['latitude']
+    lon = xr.open_dataset(f)['longitude']
+
+    regrid_surface_had_con = regridder_hadtocesm2(temp_con[:,0,:,:].where(temp_con.latitude<65))
+
+    f='/scratch/abf376/FAFMIP/MITGCM_v2/FAF-control/THETA_yr_flux-only_CanESM2_10000-10100.nc'
+    temp_con_mit=xr.open_dataset(f)['THETA']
+    temp_con_mit=temp_con_mit.where(temp_con_mit !=9.969209968386869e+36) #get rid of weird values
+    temp_con_mit=temp_con_mit.where(temp_con_mit>-30)
+
+    regrid_surface_mit_con = regridder_mittocesm2(temp_con_mit[:,0,:,:])
+    
+    
+    x=np.linspace(31,38,10000)
+    #let's find the change in salinity in each of these regions over the 70 years
+    s=(salt[0:36,:,:].mean('time')).where(salt.latitude<65)
+   
+    ##TEMP ALL
+    temp_access_all=np.empty([70,n])
+    for j in range(0,70):
+        s_new=(regrid_surface_access[j,:,:]).where(regrid_surface_access.latitude<65)
+        for i in range(0,n):
+            temp_access_all[j,i]=area_weighted_disjoint(area,i,s,s_new,x,a2)
+
+    temp_mit_all=np.empty([70,n])
+    for j in range(0,70):
+        s_new=(regrid_surface_mit[j,:,:])
+        for i in range(0,n):
+            temp_mit_all[j,i]=area_weighted_disjoint(area,i,s,s_new,x,a2)
+
+    temp_had_all=np.empty([70,n])
+    for j in range(0,70):
+        s_new=(regrid_surface_had[j,:,:])
+        for i in range(0,n):
+            temp_had_all[j,i]=area_weighted_disjoint(area,i,s,s_new,x,a2)
+
+    ##TEMP CONTROL
+    temp_access_con=np.empty([70,n])
+    for j in range(0,70):
+        s_new=(regrid_surface_access_con[j,:,:]).where(regrid_surface_access_con.latitude<65)
+        for i in range(0,n):
+            temp_access_con[j,i]=area_weighted_disjoint(area,i,s,s_new,x,a2)
+
+    temp_mit_con=np.empty([70,n])
+    for j in range(0,70):
+        s_new=(regrid_surface_mit_con[j,:,:])
+        for i in range(0,n):
+            temp_mit_con[j,i]=area_weighted_disjoint(area,i,s,s_new,x,a2)
+
+    temp_had_con=np.empty([70,n])
+    for j in range(0,70):
+        s_new=(regrid_surface_had_con[j,:,:])
+        for i in range(0,n):
+            temp_had_con[j,i]=area_weighted_disjoint(area,i,s,s_new,x,a2)
+
+    return temp_mit_all,temp_had_all,temp_access_all, temp_access_con, temp_mit_con, temp_had_con
+
 
 def regridded_fafmip_coupled(salt,area,a2,n):
     #----------------------------------------------------

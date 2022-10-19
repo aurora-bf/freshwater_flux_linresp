@@ -57,6 +57,15 @@ def ensemble_member_blockbootstrap(l):
         for i in range(0,n):
             salt_cesm_member[j,i]=area_weighted_disjoint(area,i,s,s_new,x,a2)
             temp_cesm_member[j,i]=area_weighted_disjoint(area,i,s,t_new,x,a2)
+    
+    ## THIS PART IS ONLY NEEDED IF YOU'RE DOING AREA WEIGHTED        
+    def area_disjoint(area,i,salt_surface,thing_to_weight,x,a2):
+        return ((thing_to_weight*area).where(salt_surface>(x[a2[i]])).where(salt_surface<(x[a2[i+1]]))).sum()
+    ones_grid=salt_list[real][0,:,:].where(salt_list[real][0,:,:]==1, other=1)
+    area_cluster=np.empty(6)
+    for i in range(0,n):
+        area_cluster[i]=area_disjoint(area,i,s,ones_grid,x,a2)
+    ##
 
     #find the change in salinity and temperature in each cluster
     change_cesm_member=salt_cesm_member[:,:]-np.mean(salt_cesm_member[0:2,:],0)
@@ -104,7 +113,8 @@ def ensemble_member_blockbootstrap(l):
     #Apply linear response theory to each member of the artificial ensemble which was created for individual ensemble member l
     n=6
     from linear_response_tools import linear_response_list_bootstrap
-    change_water1, change_heat1=linear_response_list_bootstrap(salt_list_bootstrap,temp_list_bootstrap,salt_list[real][0:45*12,:,:],n,a2)
+    #change_water1, change_heat1=linear_response_list_bootstrap(salt_list_bootstrap,temp_list_bootstrap,salt_list[real][0:45*12,:,:],n,a2) SWITCH TO THIS LINE IF YOU DON'T WANT AREA WEIGHTED
+    change_water1, change_heat1=linear_response_list_bootstrap(salt_list_bootstrap,temp_list_bootstrap,salt_list[real][0:45*12,:,:],n,a2,weighted=1,area_cluster=area_cluster)
     
     std=change_water1.std()
     mean=change_water1.mean()
@@ -178,15 +188,10 @@ area=xr.DataArray(area,dims=["latitude","longitude"],coords=[salt_list[0].latitu
 
 x=np.linspace(31,38,10000)
 
-
-
-
 #empty arrays we will store in
 mean_member2=np.empty(34) #store the means of applying linear response theory to each ensemble member
 std_member2=np.empty(34) #store the standard deviations of applying linear response theory to each ensemble member
 change_water=np.empty([34,3000])
-
-
 
 #iterate the above function over the 34 members
 for i in range(0,34): 
@@ -194,9 +199,9 @@ for i in range(0,34):
     print(i)
 
 #pickle the results
-with open("bootstrap_std_3000_updateaug24", "wb") as fp:   #Pickling
+with open("bootstrap_std_3000_areaweight", "wb") as fp:   #Pickling
     pickle.dump(std_member2, fp)
-with open("bootstrap_mean_3000_updateaug24", "wb") as fp:   #Pickling
+with open("bootstrap_mean_3000_areaweight", "wb") as fp:   #Pickling
     pickle.dump(mean_member2, fp)
-with open("bootstrap_change_water_3000_updateaug24","wb") as fp:
+with open("bootstrap_change_water_3000_areaweight","wb") as fp:
     pickle.dump(change_water, fp)
