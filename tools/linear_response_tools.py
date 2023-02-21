@@ -353,7 +353,7 @@ def linear_response_list3(salt,temp,n): #the previous function uses the linear t
     return change_water_1, change_heat_1
     
     
-def linear_response_list_bootstrap(salt,temp,salt_mean,n,a2,obs=0,weighted=0,area_cluster=np.ones(6)): #this function is similar to linear_response_list but takes input that's already collocated in clusters (rather than a lat lon grid). takes last 5 years minus first 5 years.
+def linear_response_list_bootstrap(salt,temp,salt_mean,n,a2,obs=0,weighted=0,area_cluster=np.ones(6),returns=2): #this function is similar to linear_response_list but takes input that's already collocated in clusters (rather than a lat lon grid). takes last 5 years minus first 5 years.
    #----------------------------------------------------
     #This function takes in salt and temperature fields as a bootstrapped list list. Thus, the preprocessing of clustering and then bootstrapping around has already been done
     #This function has input of:
@@ -386,6 +386,8 @@ def linear_response_list_bootstrap(salt,temp,salt_mean,n,a2,obs=0,weighted=0,are
 
 
     change_heat_1=np.empty([len(salt)])
+    change_water_modelspread=np.empty([len(salt),3])
+    change_heat_modelspread=np.empty([len(salt),3])
 
     if obs==0:
         nn=int(np.size(salt_mean[:,0,0])/12)
@@ -495,9 +497,16 @@ def linear_response_list_bootstrap(salt,temp,salt_mean,n,a2,obs=0,weighted=0,are
                     df4[:,start-start_yr,k,p]=(df[:,start-start_yr,k,p].cumsum()) #don't subtract off so starts at 0
                 df3=np.mean(df2,axis=1) #mean over the start years where we subtracted off
                 df5=np.mean(df4,axis=1) #mean over the start years where we didn't make start from 0
+            change_water_modelspread[q,p]=df3[40:45,0,p].mean()-df3[0:5,0,p].mean() #also include all versions from different ocean models
+            change_heat_modelspread[q,p]=df3[40:45,1,p].mean()-df3[0:5,1,p].mean()
         df3_mean=np.mean(df3,axis=2)
         df5_mean=np.mean(df5,axis=2)
 
         change_water_1[q]=df3_mean[40:45,0].mean()-df3_mean[0:5,0].mean()
         change_heat_1[q]=df3_mean[40:45,1].mean()-df3_mean[0:5,1].mean()
-    return change_water_1, change_heat_1
+        
+
+    if returns==2:
+        return change_water_1, change_heat_1
+    if returns==4:
+        return change_water_1, change_heat_1, change_water_modelspread.ravel(), change_heat_modelspread.ravel()
