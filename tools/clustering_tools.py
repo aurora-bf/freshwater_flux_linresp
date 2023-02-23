@@ -2,7 +2,7 @@
 #The functions in this document are used to perform and then show the clustering of the surface salinity distribution. 
 #The first function GMM_timedep takes in the salt field and number of clusters and fits a Gaussian mixture model to the surface salinity distribution. The _timedep ending to the function refers to the fact that the user should pass in a field that is already averaged over the appropriate times (rather than the function receiving a timeseries of salt and using a particular time slice for the fit)
 #The second function computes the AIC (Akaike information criterion) and BIC (Bayesian information criterion) metrics for the salt field that is given. This helps to choose the appropriate number of clusters.
-#The last function categorizes each surface point into clusters using the highest probability that that point's salinity falls into a given Gaussian from previous functions. It then plots the surface as clustered.
+#The third function categorizes each surface point into clusters using the highest probability that that point's salinity falls into a given Gaussian from previous functions. It then plots the surface as clustered.
 ###############
 
 import numpy as np
