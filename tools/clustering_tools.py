@@ -1,8 +1,9 @@
 ############
 #The functions in this document are used to perform and then show the clustering of the surface salinity distribution. 
-#The first function GMM_timedep takes in the salt field and number of clusters and fits a Gaussian mixture model to the surface salinity distribution. The _timedep ending to the function refers to the fact that the user should pass in a field that is already averaged over the appropriate times (rather than the function receiving a timeseries of salt and using a particular time slice for the fit)
-#The second function computes the AIC (Akaike information criterion) and BIC (Bayesian information criterion) metrics for the salt field that is given. This helps to choose the appropriate number of clusters.
-#The third function categorizes each surface point into clusters using the highest probability that that point's salinity falls into a given Gaussian from previous functions. It then plots the surface as clustered.
+#The first function (GMM_timedep) takes in the salt field and number of clusters and fits a Gaussian mixture model to the surface salinity distribution. The _timedep ending to the function refers to the fact that the user should pass in a field that is already averaged over the appropriate times (rather than the function receiving a timeseries of salt and using a particular time slice for the fit)
+#The second function (AIC_BIC_timedep) computes the AIC (Akaike information criterion) and BIC (Bayesian information criterion) metrics for the salt field that is given. This helps to choose the appropriate number of clusters.
+#The third function (clusters) categorizes each surface point into clusters using the highest probability that that point's salinity falls into a given Gaussian from previous functions. It then plots the surface as clustered.
+#The last function (GMM_plot_withmap) just plots differently for the paper (lines up the map from clusters) with the pdf fit with GMM from GMM_timedep. Doesn't do anything differently other than plotting!!
 ###############
 
 import numpy as np
@@ -25,8 +26,7 @@ from area_grid import *
 import sys
 import scipy
 import matplotlib
-sys.path.insert(1,'/Users/aurora/Documents/GitHub/pattern_amplification')
-#from dip_test import dip
+#sys.path.insert(1,'/Users/aurora/Documents/GitHub/pattern_amplification')
 import sklearn.mixture
 from sklearn.mixture import GaussianMixture
 
@@ -293,7 +293,7 @@ def AIC_BIC_timedep(salt_experiment,experiment,subplot_label='',subplot_label2='
     ax2.set_title(str)
     ax2.legend()
     
-    matplotlib.pyplot.savefig('AIC_BIC_together_withgrad.png', dpi=500,bbox_inches='tight',facecolor='white',transparent=False)
+    #matplotlib.pyplot.savefig('AIC_BIC_together_withgrad.png', dpi=500,bbox_inches='tight',facecolor='white',transparent=False)
 
     
 
@@ -307,7 +307,7 @@ def clusters(gm,salt,title,k,matching_paper=0,plot=0,subplot_label=''):
         # - title: title of the map showing clusters (string)
         # - k: number of clusters
         # - (OPTIONAL): plot. By default this will produce plots, but if plot=1 then it won't
-        # - (OPTIONAL) matching_paper. THere are two colour schemes that can be used here. By default if matching_paper not supplied it is one option. We also have the option to give matching_paper=1 which uses another colour scheme that we are going to use for the paper so all the plots can match
+        # - (OPTIONAL) matching_paper. There are two colour schemes that can be used here. By default if matching_paper not supplied it is one option. We also have the option to give matching_paper=1 which uses another colour scheme that we are going to use for the paper so all the plots can match
     # This function has output of:
         # - y_disjoint: an array with all lat and lon and then the location of each gaussian marked using the gaussian dimension
         #- a2: the index locations in the vector of salinities x=np.linspace(31,38,10000) where each Gaussian starts and stops
@@ -319,11 +319,6 @@ def clusters(gm,salt,title,k,matching_paper=0,plot=0,subplot_label=''):
     a,a1=np.unique(gm.predict(x.reshape(-1,1)),return_index=True)
     np.sort(a1)
     P=copy.deepcopy(gm.predict(x.reshape(-1,1)))
-    #for i in range(0,n):
-    #    if i<5:
-    #        P[np.sort(a1)[i]:np.sort(a1)[i+1]]=i
-    #    else:
-    #        P[np.sort(a1)[i]:len(P)-1]=i
     a2=np.append(np.sort(a1),len(x)-1)
 
     ## This chooses it so that it is distinct features rather than within 1 standard deviation
@@ -349,11 +344,9 @@ def clusters(gm,salt,title,k,matching_paper=0,plot=0,subplot_label=''):
             elif k==7:
                 colorsList = ['#f6eff7','#d0d1e6','#a6bddb','#67a9cf','#1c9099','#016c59','#253494']
         elif matching_paper==1:
-            #colorsList=['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#2c7fb8','#253494'] #these colours aren't ideal but we use for paper so that the Gaussian mixture plot, plots of salinity and this plot can have consistent colours for each region.
             colorsList=['#2a186c', '#0d4e96', '#2d7c89', '#4aaa81', '#94d35d', '#DBE80C']
         o=y_disjoint.sum('gaussian').where(y_disjoint.sum('gaussian')>0)
         CustomCmap = matplotlib.colors.ListedColormap(colorsList)
-        #CustomCmap.set_bad(color='w')
         fig, ax = plt.subplots(subplot_kw={'projection':ccrs.PlateCarree()},figsize=(10,8),dpi=120) #this is from cartopy https://rabernat.github.io/research_computing_2018/maps-with-cartopy.html
         #p=(o.where(y_disjoint[:,:,1].latitude<65)).plot(cbar_kwargs={'shrink':0.75,'orientation':'horizontal','extend':'both','pad':0.08,'spacing':'proportional'},ax=ax,cmap=CustomCmap,alpha=1) #you have to set a colormap here because plotting xarray infers from the 
         p=(o.where(y_disjoint[:,:,1].latitude<65)).plot(vmin=1,vmax=6,ax=ax,cmap=CustomCmap,alpha=1,add_colorbar=False) #you have to set a colormap here because plotting xarray infers from the 
@@ -383,8 +376,18 @@ def clusters(gm,salt,title,k,matching_paper=0,plot=0,subplot_label=''):
 
 
 def GMM_plot_withmap(salt_experiment,k,experiment,title,subplot_label='',subplot_label2=''):
-    
+     #----------------------------------------------------
     #This plot just exists to line up the GMM and the map and add labels so we can make the subfigures for the paper. It doesn't do anything different than other functions other than plotting!
+    #----------------------------------------------------
+    #This function has input of:
+        # - salt_experiment: salt field with a time mean over the period of time of interest from the dataset of interest
+        # - k: number of clusters
+        # - experiment: A string describing where the salt field came from that is placed on the plot of the distribution
+        # - title: title addition to the map
+        #- subplot_label= label for the distribution (e.g. (a))
+        #- subplot_label2= label for the distribution (e.g. (b))
+    #-----------------------------------------------------
+    
     
     #MAKE PDF PLOT
     np.random.seed(0)
@@ -508,9 +511,7 @@ def GMM_plot_withmap(salt_experiment,k,experiment,title,subplot_label='',subplot
     ax2 = fig.add_subplot(gs[:, 8:20], projection=ccrs.PlateCarree())
     o=y_disjoint.sum('gaussian').where(y_disjoint.sum('gaussian')>0)
     CustomCmap = matplotlib.colors.ListedColormap(colorsList)
-    #CustomCmap.set_bad(color='w')
-    #ax2 = plt.subplots(subplot_kw={'projection':ccrs.PlateCarree()},figsize=(10,8),dpi=120) #this is from cartopy https://rabernat.github.io/research_computing_2018/maps-with-cartopy.html
-    #ax2 = plt.axes(projection=ccrs.PlateCarree())    #p=(o.where(y_disjoint[:,:,1].latitude<65)).plot(cbar_kwargs={'shrink':0.75,'orientation':'horizontal','extend':'both','pad':0.08,'spacing':'proportional'},ax=ax,cmap=CustomCmap,alpha=1) #you have to set a colormap here because plotting xarray infers from the 
+
     p=(o.where(y_disjoint[:,:,1].latitude<65)).plot(vmin=1,vmax=6,ax=ax2,cmap=CustomCmap,alpha=1,add_colorbar=False) #you have to set a colormap here because plotting xarray infers from the 
 
     cbar = plt.colorbar(p,orientation='horizontal',extend='neither',pad=0.11,shrink=0.85)
@@ -529,9 +530,8 @@ def GMM_plot_withmap(salt_experiment,k,experiment,title,subplot_label='',subplot
     ax2.add_feature(cart.feature.LAND, zorder=100, edgecolor='k')
     ax2.set_title(title)
     ax2.text(-0.075, 1.05, subplot_label2, horizontalalignment='center', verticalalignment='center', transform=ax2.transAxes)
-    #fig.tight_layout()
     
-    matplotlib.pyplot.savefig('CESM_GMM_andmap.png', dpi=500,bbox_inches='tight',facecolor='white',transparent=False)
+    #matplotlib.pyplot.savefig('CESM_GMM_andmap.png', dpi=500,bbox_inches='tight',facecolor='white',transparent=False)
 
 
     return 

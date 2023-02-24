@@ -33,13 +33,7 @@ from matplotlib.axes._secondary_axes import SecondaryAxis
 import xesmf as xe
 from area_grid import *
 
-
-#Note on depracated functions:
-# See also: linear_response_list_bootstrap_acceptnan and linear_response_list located in linear_response_functions (the non-cleaned up version of this file) for functions that have been used previously but are not in use in any of these notebooks
-# linear_response_list is comparable to linear_response_list2 included here but uses the linear trend rather than the last 5 years minus the first 5 years when outputting the proportion of the fafmip response for each list member
-# linear_response_list_bootstrap_acceptnan was used when testing dropping regions that didn't have significant trends. It is comparable to linear_response_list_bootstrap, but can take nan time series
-
-def linear_response2(salt,temp,salt_mean,n):
+def linear_response(salt,temp,salt_mean,n):
     #----------------------------------------------------
     #Note: this function is different than linear_response in older versions of this work as it characterizes the proportion of FAFMIP response as last 5 years minus first 5 years rather than fitting a linear trend 
     #This function has input of:
@@ -202,7 +196,7 @@ def linear_response2(salt,temp,salt_mean,n):
     return change_water_1, change_heat_1
 
 
-def linear_response_list3(salt,temp,n): #the previous function uses the linear trend and this just takes last 5 years minus first 5 years.
+def linear_response_list(salt,temp,n): 
    #----------------------------------------------------
     #Note: this function is different than the older linear_response_list2 in older versions of this work as it properly reclusters each member of the list
     #This function takes in salt and temperature fields as a list and then clusters them and applies linear response theory to each one
@@ -353,7 +347,7 @@ def linear_response_list3(salt,temp,n): #the previous function uses the linear t
     return change_water_1, change_heat_1
     
     
-def linear_response_list_bootstrap(salt,temp,salt_mean,n,a2,obs=0,weighted=0,area_cluster=np.ones(6),returns=2): #this function is similar to linear_response_list but takes input that's already collocated in clusters (rather than a lat lon grid). takes last 5 years minus first 5 years.
+def linear_response_list_bootstrap(salt,temp,salt_mean,n,a2,obs=0,weighted=0,area_cluster=np.ones(6),returns=2): 
    #----------------------------------------------------
     #This function takes in salt and temperature fields as a bootstrapped list list. Thus, the preprocessing of clustering and then bootstrapping around has already been done
     #This function has input of:
@@ -363,9 +357,13 @@ def linear_response_list_bootstrap(salt,temp,salt_mean,n,a2,obs=0,weighted=0,are
         # - salt_mean: give it the salt field that was clustered on so that it can put the fafmip data in the correct clusters
         # - n: number of clusters
         # - obs=0, 0 if data is monthly and 1 if data is yearly
+        # - weighted determines whether to solve the linear response problem weighted by the area of the cluster
+        # - area_cluster is an input of the area of each cluster (vector of size n)
+        # - returns=2 is default and gives a list of output of the proportion of freshwater flues and heat fluxes over the period of interest. If returns=4, we also include two more lists that have the same thing but before we took the mdean across ocean models -- thus it can be used to get a sense of spread in response depending which ocean model is used as the response function. The paper uses returns=2
     # This function has output of:
         # - change_water1: List of output of proportion of FAFMIP freshwater flux over period of interest. Calculated as mean of last 5 years minus first 5 years
         # - change_heat1: List of output of proportion of FAFMIP heat flux over period of interest. Calculated as mean of last 5 years minus first 5 years
+        # - if returns=4, the same as above plus 2 more outputs that include change_water1 and change_heat1 before means are taken across ocean models as response functions
         # Plots of timeseries of proportion of FAFMIP freshwater flux, heat flux, wind stress 
     #-----------------------------------------------------
 #input a list of salt and temp
