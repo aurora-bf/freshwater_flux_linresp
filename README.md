@@ -6,37 +6,14 @@ The tools folder contains functions needed for applying the method including fun
 The conda environment used when creating this repo is in environment.yml and the environment can be recreated using conda env create -f environment.yml
 
 The figures from our paper are generated in the following.
-/app_to_obs/application_to_obs.ipynb: Fig 1c/d, Fig 2, Fig 3a, Fig 4, Fig 5
+
+/app_to_obs/application_to_obs.ipynb: Fig 1c/d, Fig 2, Fig 3a, Fig 11, Fig 12
+
 /app_to_obs/plot_compare_results.ipynb: Fig 13
 
+/app_to_obs/additional_app_obs.ipynb: Fig 4 and Fig 5
 
 
-Figure 1a,b -
+Still to account for:
+Figure 1a,b, Figure 3b, Figure 6, Figure 7, Figure 8, Figure 9, Figure 10
 
-Figure 1c,d - accounted for
-
-Figure 2 - accounted for
-
-Figure 3 a- accounted for
-
-Figure 3b - 
-
-Figure 4 - accounted for
-
-FIgure 5 - Accounted for
-
-Figure 6 -
-
-Figure 7 - 
-
-Figure 8 -
-
-Figure 9 -
-
-Figure 10 -
-
-Figure 11 -
-
-Figure 12 -
-
-Figure 13 - accounted for
