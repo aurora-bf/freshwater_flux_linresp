@@ -11,9 +11,11 @@ The figures from our paper are generated in the following.
 
 /app_to_obs/plot_compare_results.ipynb: Fig 13
 
+/model_tests/linear_response_CESM_ensemblemean.ipynb: Fig 1 a/b, Fig 2b, Fig 4, Fig 5, Fig 6
+
 
 
 
 Still to account for:
-Figure 1a,b, Figure 2b, Figure 3a/b, Fig 4, Fig 5, Figure 6, Figure 7, Figure 8, Figure 9
+Figure 3a/b, Fig 7, Fig 8, Fig 9
 

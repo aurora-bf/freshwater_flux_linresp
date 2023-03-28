@@ -1,4 +1,4 @@
-#This file saves salt and temperature fields from 34 members of the CESM large ensemble into regridded lists
+## This file saves salt and temperature fields from 34 members of the CESM large ensemble into regridded lists
 
 # modules needed
 
@@ -62,7 +62,7 @@ for i in range(2,36):
     s=xr.open_dataset(f)['TEMP']
     temp_2005on.append(s[:,0,:,:])
 
-# Make a regridder object
+# Make a regridder object using xesmf package
 
 ds_out = xe.util.grid_global(1, 1)
 regridder_tocesm = xe.Regridder(salt_flux[0], ds_out, "bilinear",periodic=True)
@@ -71,25 +71,25 @@ regridder_tocesm = xe.Regridder(salt_flux[0], ds_out, "bilinear",periodic=True)
 #Regrid salt pre 2005
 regridded_salt=[]
 for i in range(0,34):
-    s = regridder_cesmtocesm2(salt[i])
+    s = regridder_tocesm(salt[i])
     regridded_salt.append(s)
 
 #Regrid salt post 2005
 regridded_salt_2005on=[]
 for i in range(0,34):
-    s = regridder_cesmtocesm2(salt_2005on[i])
+    s = regridder_tocesm(salt_2005on[i])
     regridded_salt_2005on.append(s)
 
 #Regrid temp pre 2005
 regridded_temp=[]
 for i in range(0,34):
-    s = regridder_cesmtocesm2(temp[i])
+    s = regridder_tocesm(temp[i])
     regridded_temp.append(s)
 
 #Regrid temp post 2005
 regridded_temp_2005on=[]
 for i in range(0,34):
-    s = regridder_cesmtocesm2(temp_2005on[i])
+    s = regridder_tocesm(temp_2005on[i])
     regridded_temp_2005on.append(s)
 
 #Pickle the files

@@ -39,7 +39,7 @@ for i in range(2,36):
     s=xr.open_dataset(f)['SFWF']
 
 
-# Make a regridder object
+# Make a regridder object using xesmf package
 
 ds_out = xe.util.grid_global(1, 1)
 regridder_tocesm = xe.Regridder(salt_flux[0], ds_out, "bilinear",periodic=True)
