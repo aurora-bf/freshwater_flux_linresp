@@ -7,15 +7,17 @@ The conda environment used when creating this repo is in environment.yml and the
 
 The figures from our paper are generated in the following.
 
-/app_to_obs/application_to_obs.ipynb: Fig 1c/d, Fig 2a, Fig 10, Fig 11, Fig 12
+/app_to_obs/application_to_obs.ipynb: Fig 3c/d, Fig 1a, Fig 10, Fig 11, Fig 12
 
 /app_to_obs/plot_compare_results.ipynb: Fig 13
 
-/model_tests/linear_response_CESM_ensemblemean.ipynb: Fig 1 a/b, Fig 2b, Fig 4, Fig 5, Fig 6
+/model_tests/linear_response_CESM_ensemblemean.ipynb: Fig 3 a/b, Fig 1b, Fig 4, Fig 5, Fig 6
+
+/model_tests/true_freshwater_fluxes.ipynb: Fig 2, Fig 8
 
 
 
 
 Still to account for:
-Figure 3a/b, Fig 7, Fig 8, Fig 9
+Fig 7,Fig 9
 

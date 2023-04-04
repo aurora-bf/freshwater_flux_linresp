@@ -1,6 +1,6 @@
-#This file saves salt fluxes from 34 members of the CESM large ensemble into regridded lists
+##This file saves salt fluxes from 34 members of the CESM large ensemble into lists where each list member is regridded to the 1x1 grid needed
 
-# modules needed
+# Load modules needed
 
 
 import netCDF4
@@ -45,7 +45,7 @@ ds_out = xe.util.grid_global(1, 1)
 regridder_tocesm = xe.Regridder(salt_flux[0], ds_out, "bilinear",periodic=True)
 
 
-# Regrid the salt_flux list containing 1920 to 2005 salt fluxes
+# Regrid the salt fluxes
 
 
 #regrid the pre2005 fluxes (1920-2005)

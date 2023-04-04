@@ -1,11 +1,12 @@
 #This file calculates the p values of the linear fits to each region for each CESM ensemble member
 #This could have been combined with run_bootstrap_cesm_ensemble.py, but the ideas were run separately and we didn't want need to rerun both to recombine
+
 #However, a lot of the code has similarities to runbootstrap_cesm_ensemble.py. First we categorize each region, then find the linear trend (and associated p value) and block bootstrap and then invert the confidence interval of that (to find p value)
-# Linear response theory is not applied to the artificial ensembles here though.
-
-# Load in needed packages
+# The difference with run_bootstrap_cesm_ensemble.py though is that linear response theory is not applied to the artificial ensembles here.
 
 
+
+# Load in packages
 import scipy.io
 import netCDF4
 import xarray as xr

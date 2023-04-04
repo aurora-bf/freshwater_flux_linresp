@@ -1,9 +1,9 @@
 # This file iterates through each CESM ensemble member and for each applies the method by first fitting a GMM, then creating an artificial ensemble using block bootstrapping, then applying linear response theory.
-#Note: This file is essentially the same as run_bootstrap_notrenduncertainty.py in not cleaned up version of file
-
-# Load in needed packages
+#Note for comparison with older versions of this code: This file is essentially the same as run_bootstrap_notrenduncertainty.py in not cleaned up version of file
 
 
+
+# Load in packages
 import scipy.io
 import netCDF4
 import xarray as xr
@@ -52,8 +52,8 @@ def ensemble_member_blockbootstrap(l):
     salt_cesm_member=np.empty([50,n])
     temp_cesm_member=np.empty([50,n])
     for j in range(0,50):
-        s_new=(salt_list[real][j*12:(j+1)*12,:,:].mean('time')).where(salt_list[real].latitude<65) #update aug 24 is changing this from salt_list[0] to salt_list[real]
-        t_new=(temp_list[real][j*12:(j+1)*12,:,:].mean('time')).where(temp_list[real].latitude<65) #update aug 24 is changing this from temp_list[0] to temp_list[real]
+        s_new=(salt_list[real][j*12:(j+1)*12,:,:].mean('time')).where(salt_list[real].latitude<65) 
+        t_new=(temp_list[real][j*12:(j+1)*12,:,:].mean('time')).where(temp_list[real].latitude<65)
         for i in range(0,n):
             salt_cesm_member[j,i]=area_weighted_disjoint(area,i,s,s_new,x,a2)
             temp_cesm_member[j,i]=area_weighted_disjoint(area,i,s,t_new,x,a2)

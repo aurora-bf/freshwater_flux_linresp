@@ -1,4 +1,5 @@
-## This file saves salt and temperature fields from 34 members of the CESM large ensemble into regridded lists
+## This file saves salt and temperature fields from 34 members of the CESM large ensemble into lists where each list member is regridded to the 1x1 grid needed
+
 
 # modules needed
 
