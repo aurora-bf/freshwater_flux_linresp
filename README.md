@@ -1,4 +1,4 @@
-Code and tools used to estimate freshwater fluxes from data using linear response theory. 
+Code and tools used to estimate freshwater fluxes from ocean tracer data using linear response theory. 
 
 
 The tools folder contains functions needed for applying the method including functions for fitting the Gaussian mixture model, regridding data, and applying linear response theory. The folder model_tests applies the method to data from the CESM large ensemble. Here we focus on historical time period (1975-2019), but the folder also includes tests for future times (2011-2050). The folder app_to_obs applies the method to IAP data (see Cheng et al. 2020). Note some functions will need additional information to run - for example, the ocean only FAFMIP functions are needed to be able to execute this repo. These are publicly available but will need to be placed in a directory and then pointed to in tools/fafmip_gridding_tools.py
@@ -15,8 +15,8 @@ The figures from our paper are generated in the following.
 
 /model_tests/true_freshwater_fluxes.ipynb: Fig 2, Fig 8
 
-Still to account for:
-Fig 9
+/model_tests/individual_ensemble_member_CESM.ipynb: Fig 9 (but still should clean up this doc)
+
 
 
 
@@ -28,8 +28,8 @@ Fig S2/S3: /app_to_obs/additional_app_obs.ipynb
 
 Fig S4: /model_tests/linear_response_CESM_ensemblemean.ipynb 
 
-Fig S5:
+Fig S5: /model_tests/individual_ensemble_member_CESM.ipynb
 
-Fig S6:
+Fig S6: /model_tests/longer_time_series/individual_ensemble_member_CESM_longertimeseries.ipynb (still clean up this doc)
 
 

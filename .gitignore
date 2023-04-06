@@ -6,3 +6,6 @@ linear_response_CESM_ensemblemean_withmore.ipynb
 individual_ensemble_member_CESM_old.ipynb
 run_bootstrap_cesm_ensemble_pvalue.py
 application_to_obs_old3yearavg.ipynb
+additional_app_obs_3year.ipynb
+bootstrap_change_heat_3000_iap
+bootstrap_change_water_3000_iap
