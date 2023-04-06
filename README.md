@@ -15,7 +15,7 @@ The figures from our paper are generated in the following.
 
 /model_tests/true_freshwater_fluxes.ipynb: Fig 2, Fig 8
 
-/model_tests/individual_ensemble_member_CESM.ipynb: Fig 9 (but still should clean up this doc)
+/model_tests/individual_ensemble_member_CESM.ipynb: Fig 9
 
 
 
