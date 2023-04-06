@@ -5,3 +5,4 @@ pickled_files_regriddedobjects
 linear_response_CESM_ensemblemean_withmore.ipynb
 individual_ensemble_member_CESM_old.ipynb
 run_bootstrap_cesm_ensemble_pvalue.py
+application_to_obs_old3yearavg.ipynb

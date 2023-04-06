@@ -252,7 +252,7 @@ def AIC_BIC_timedep(salt_experiment,experiment,subplot_label='',subplot_label2='
     ax.text(-0.13, 1.05, subplot_label, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
 
     
-    matplotlib.pyplot.savefig('AIC_BIC_5year_CESM.png', dpi=300,bbox_inches='tight',facecolor='white',transparent=False)
+    #matplotlib.pyplot.savefig('AIC_BIC_5year_CESM.png', dpi=300,bbox_inches='tight',facecolor='white',transparent=False)
 
     fig, ax = plt.subplots()
     # Compute metrics to determine best hyperparameter
@@ -269,7 +269,7 @@ def AIC_BIC_timedep(salt_experiment,experiment,subplot_label='',subplot_label2='
     ax.text(-0.13, 1.05, subplot_label2, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
 
     
-    matplotlib.pyplot.savefig('AIC_BIC_grad_5year_CESM.png', dpi=300,bbox_inches='tight',facecolor='white',transparent=False)
+    #matplotlib.pyplot.savefig('AIC_BIC_grad_5year_CESM.png', dpi=300,bbox_inches='tight',facecolor='white',transparent=False)
     
     
     fig, (ax1, ax2) = plt.subplots(1,2,figsize=(15,5.9))
