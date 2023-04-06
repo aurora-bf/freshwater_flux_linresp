@@ -34,7 +34,7 @@ import xesmf as xe
 from area_grid import *
 import warnings
 
-def linear_response_single(salt,temp,a2,salt_mean,n,weighted=0,area_cluster=np.ones(6)):
+def linear_response_single(salt,temp,a2,salt_mean,n,weighted=0,area_cluster=np.ones(6),title='Freshwater flux forcing over period 1975 to 2019 (45 years) compared to FAFMIP for IAP observations'):
    #----------------------------------------------------
     #This function takes in salt and temperature fields where the preprocessing of clustering and taking the anomaly has already been done
     #This function has input of:
@@ -166,7 +166,7 @@ def linear_response_single(salt,temp,a2,salt_mean,n,weighted=0,area_cluster=np.o
     plt.plot(np.linspace(1975,2019,45),df3[0:45,0,0],':',linewidth=1.5)
     plt.plot(np.linspace(1975,2019,45),df3[0:45,0,1],':',linewidth=1.5)
     plt.plot(np.linspace(1975,2019,45),df3[0:45,0,2],':',linewidth=1.5)
-    plt.title('Freshwater flux forcing over period 1975 to 2019 (45 years) compared to FAFMIP for IAP observations',fontsize=15)
+    plt.title(title,fontsize=15)
     plt.xlabel('Time', fontsize=13)
     plt.ylabel('F(t), proportion of FAFMIP response', fontsize=13)
     plt.legend(['Mean MITgcm, ACCESS-OM2, HadOM3','MITgcm','ACCESS-OM2','HadOM3'])

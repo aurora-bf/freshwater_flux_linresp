@@ -11,13 +11,25 @@ The figures from our paper are generated in the following.
 
 /app_to_obs/plot_compare_results.ipynb: Fig 13
 
-/model_tests/linear_response_CESM_ensemblemean.ipynb: Fig 3 a/b, Fig 1b, Fig 4, Fig 5, Fig 6
+/model_tests/linear_response_CESM_ensemblemean.ipynb: Fig 3 a/b, Fig 1b, Fig 4, Fig 5, Fig 6, Fig 7
 
 /model_tests/true_freshwater_fluxes.ipynb: Fig 2, Fig 8
 
-
-
-
 Still to account for:
-Fig 7,Fig 9
+Fig 9
+
+
+
+The supplementary figures are generated in:
+
+Fig S1 a + b: /app_to_obs/application_to_obs.ipynb + /model_tests/linear_response_CESM_ensemblemean.ipynb
+
+Fig S2/S3: /app_to_obs/additional_app_obs.ipynb
+
+Fig S4: /model_tests/linear_response_CESM_ensemblemean.ipynb 
+
+Fig S5:
+
+Fig S6:
+
 
