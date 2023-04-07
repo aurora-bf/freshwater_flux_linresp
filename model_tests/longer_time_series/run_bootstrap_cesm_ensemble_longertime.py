@@ -1,5 +1,5 @@
 # This file iterates through each CESM ensemble member and for each applies the method by first fitting a GMM, then creating an artificial ensemble using block bootstrapping, then applying linear response theory.
-#Note: This file is essentially the same as run_bootstrap_notrenduncertainty.py in not cleaned up version of file
+#Note: This file is basically run_bootstrap_cesm_ensemble.py but acts on the longer time series
 
 # Load in needed packages
 
@@ -189,9 +189,9 @@ for i in range(0,34):
     print(i)
 
 #pickle the results
-with open("bootstrap_std_3000_2011to2050_weighted", "wb") as fp:   #Pickling
+with open("bootstrap_std_3000_2011to2050_weighted_new", "wb") as fp:   #Pickling
     pickle.dump(std_member2, fp)
-with open("bootstrap_mean_3000_2011to2050_weighted", "wb") as fp:   #Pickling
+with open("bootstrap_mean_3000_2011to2050_weighted_new", "wb") as fp:   #Pickling
     pickle.dump(mean_member2, fp)
-with open("bootstrap_change_water_3000_2011to2050_weighted","wb") as fp:
+with open("bootstrap_change_water_3000_2011to2050_weighted_new","wb") as fp:
     pickle.dump(change_water, fp)
