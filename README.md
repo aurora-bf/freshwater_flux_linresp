@@ -30,6 +30,6 @@ Fig S4: /model_tests/linear_response_CESM_ensemblemean.ipynb
 
 Fig S5: /model_tests/individual_ensemble_member_CESM.ipynb
 
-Fig S6: /model_tests/longer_time_series/individual_ensemble_member_CESM_longertimeseries.ipynb (still clean up this doc)
+Fig S6: /model_tests/longer_time_series/individual_ensemble_member_CESM_longertimeseries.ipynb
 
 
