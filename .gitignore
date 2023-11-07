@@ -33,3 +33,7 @@ test_reviewer*
 testing_reviewer*
 /model_tests/**.png
 test_timeseries.ipynb
+plot_fafmip_salinity.ipynb
+Untitled.ipynb
+faf_heat_change_onmap.png
+faf_change_onmap.png
