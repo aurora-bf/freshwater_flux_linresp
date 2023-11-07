@@ -37,3 +37,5 @@ plot_fafmip_salinity.ipynb
 Untitled.ipynb
 faf_heat_change_onmap.png
 faf_change_onmap.png
+/model_tests/pvalue_salt_trends_5clusters.py
+/model_tests/run_bootstrap_cesm_ensemble_5clusters.py
