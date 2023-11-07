@@ -5,7 +5,7 @@ The tools folder contains functions needed for applying the method including fun
 
 The conda environment used when creating this repo is in environment.yml and the environment can be recreated using conda env create -f environment.yml
 
-The figures from our paper are generated in the following.
+The figures from our original paper are generated in the following.
 
 /app_to_obs/application_to_obs.ipynb: Fig 3c/d, Fig 1a, Fig 10, Fig 11, Fig 12
 
@@ -31,5 +31,7 @@ Fig S4: /model_tests/linear_response_CESM_ensemblemean.ipynb
 Fig S5: /model_tests/individual_ensemble_member_CESM.ipynb
 
 Fig S6: /model_tests/longer_time_series/individual_ensemble_member_CESM_longertimeseries.ipynb
+
+Updates to figures based on the reviewer comments to estimate trends using a linear fit instead of last five years minus first five years are updated in the same file names as listed above but with _newlineartrend added.
 
 

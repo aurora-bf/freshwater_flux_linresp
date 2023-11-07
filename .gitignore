@@ -30,3 +30,5 @@ freshwater_fluxes_projection_mean_boot_new
 freshwater_fluxes_projection_std_boot_2011to2055_new
 freshwater_fluxes_projection_std_boot_new
 test_reviewer*
+testing_reviewer*
+/model_tests/**.png
