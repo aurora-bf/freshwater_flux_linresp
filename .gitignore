@@ -32,3 +32,4 @@ freshwater_fluxes_projection_std_boot_new
 test_reviewer*
 testing_reviewer*
 /model_tests/**.png
+test_timeseries.ipynb
